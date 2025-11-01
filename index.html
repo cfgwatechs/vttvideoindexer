@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vimeo VTT to JSON Converter</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 2em auto; padding: 0 1em; }
+        label { display: block; margin-top: 1em; }
+        input, button { width: 100%; padding: 8px; margin-top: 0.25em; box-sizing: border-box; }
+        button { background-color: #0078d4; color: white; border: none; cursor: pointer; margin-top: 1.5em; padding: 12px;}
+        button:disabled { background-color: #a0a0a0; }
+        #status { margin-top: 1em; padding: 1em; border-radius: 4px; display: none; }
+        .success { background-color: #dff0d8; color: #3c763d; }
+        .error { background-color: #f2dede; color: #a94442; }
+    </style>
+</head>
+<body>
+    <h1>Vimeo Transcript Uploader</h1>
+    <p>Enter the video details and upload the .vtt transcript file.</p>
+    
+    <form id="uploadForm">
+        <label for="videoId">Video ID:</label>
+        <input type="text" id="videoId" name="videoId" required>
+
+        <label for="videoTitle">Video Title:</label>
+        <input type="text" id="videoTitle" name="videoTitle" required>
+
+        <label for="vimeoUrl">Vimeo URL:</label>
+        <input type="url" id="vimeoUrl" name="vimeoUrl" required>
+
+        <label for="vttFile">WEBVTT Transcript File (.vtt):</label>
+        <input type="file" id="vttFile" name="vttFile" accept=".vtt" required>
+
+        <button type="submit" id="submitButton">Convert & Upload</button>
+    </form>
+
+    <div id="status"></div>
+
+    <script>
+        const form = document.getElementById('uploadForm');
+        const submitButton = document.getElementById('submitButton');
+        const statusDiv = document.getElementById('status');
+        
+        // IMPORTANT: Replace this with your actual Azure Function URL
+        const AZURE_FUNCTION_URL = "YOUR_AZURE_FUNCTION_HTTP_TRIGGER_URL";
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault(); // Prevent default form submission
+
+            submitButton.disabled = true;
+            submitButton.textContent = 'Uploading...';
+            statusDiv.style.display = 'none';
+
+            const formData = new FormData(form);
+
+            try {
+                const response = await fetch(AZURE_FUNCTION_URL, {
+                    method: 'POST',
+                    body: formData,
+                    // Note: 'Content-Type' is set automatically by the browser for FormData
+                });
+
+                const responseText = await response.text();
+
+                if (response.ok) {
+                    showStatus(responseText, 'success');
+                    form.reset(); // Clear the form on success
+                } else {
+                    showStatus(`Error: ${responseText}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`Network Error: ${error.message}`, 'error');
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Convert & Upload';
+            }
+        });
+
+        function showStatus(message, type) {
+            statusDiv.textContent = message;
+            statusDiv.className = type; // 'success' or 'error'
+            statusDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
