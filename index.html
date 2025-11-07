@@ -43,7 +43,7 @@
         const statusDiv = document.getElementById('status');
         
         // IMPORTANT: Replace this with your actual Azure Function URL
-        const AZURE_FUNCTION_URL = "YOUR_AZURE_FUNCTION_HTTP_TRIGGER_URL";
+        const AZURE_FUNCTION_URL = "http://localhost:7071/api/convert";
 
         form.addEventListener('submit', async (event) => {
             event.preventDefault(); // Prevent default form submission
